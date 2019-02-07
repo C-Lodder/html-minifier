@@ -198,4 +198,10 @@ module.exports = (grunt) => {
   ]);
 
   grunt.registerTask('default', 'test');
+
+  process.on('exit', () => {
+    if (!match) {
+      process.exit(1);
+    }
+  });
 };
