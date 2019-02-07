@@ -1,10 +1,8 @@
 'use strict';
 
 function qunitVersion() {
-  var prepareStackTrace = Error.prepareStackTrace;
-  Error.prepareStackTrace = function() {
-    return '';
-  };
+  const prepareStackTrace = Error.prepareStackTrace;
+  Error.prepareStackTrace = () => '';
   try {
     return require('qunit').version;
   }
@@ -13,7 +11,8 @@ function qunitVersion() {
   }
 }
 
-module.exports = function(grunt) {
+module.exports = (grunt) => {
+  require('load-grunt-tasks')(grunt);
   // Force use of Unix newlines
   grunt.util.linefeed = '\n';
 
@@ -30,17 +29,15 @@ module.exports = function(grunt) {
       src: {
         options: {
           banner: '<%= banner %>',
-          preBundleCB: function() {
-            var fs = require('fs');
-            var path = require('path');
-            var terser = require('terser');
-            var files = {};
-            var terserPath = path.resolve() + '/node_modules/terser/lib';
-            var FILES = fs.readdirSync(terserPath).map(function(file) {
-              return path.join(terserPath, file);
-            });
+          preBundleCB() {
+            const fs = require('fs');
+            const path = require('path');
+            const terser = require('terser');
+            const files = {};
+            const terserPath = `${path.resolve()}/node_modules/terser/dist`;
+            const FILES = fs.readdirSync(terserPath).map(file => path.join(terserPath, file));
 
-            FILES.forEach(function(file) {
+            FILES.forEach(file => {
               files[file] = fs.readFileSync(file, 'utf8');
             });
             fs.writeFileSync('./dist/uglify.js', terser.minify(files, {
@@ -49,7 +46,7 @@ module.exports = function(grunt) {
               wrap: 'exports'
             }).code);
           },
-          postBundleCB: function(err, src, next) {
+          postBundleCB(err, src, next) {
             require('fs').unlinkSync('./dist/uglify.js');
             next(err, src);
           },
@@ -96,6 +93,18 @@ module.exports = function(grunt) {
       ]
     },
 
+    babel: {
+      options: {
+        sourceMap: false,
+        presets: ['@babel/preset-env']
+      },
+      dist: {
+        files: {
+          'dist/htmlminifier.js': '<%= browserify.src.dest %>'
+        }
+      }
+    },
+
     uglify: {
       options: {
         banner: '<%= banner %>',
@@ -104,9 +113,9 @@ module.exports = function(grunt) {
         preserveComments: false,
         report: 'min'
       },
-      minify: {
+      dist: {
         files: {
-          'dist/htmlminifier.min.js': '<%= browserify.src.dest %>'
+          'dist/htmlminifier.min.js': 'dist/htmlminifier.js'
         }
       }
     }
@@ -117,38 +126,38 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('gruntify-eslint');
 
   function report(type, details) {
-    grunt.log.writeln(type + ' completed in ' + details.runtime + 'ms');
-    details.failures.forEach(function(details) {
+    grunt.log.writeln(`${type} completed in ${details.runtime}ms`);
+    details.failures.forEach(details => {
       grunt.log.error();
-      grunt.log.error(details.name + (details.message ? ' [' + details.message + ']' : ''));
+      grunt.log.error(details.name + (details.message ? ` [${details.message}]` : ''));
       grunt.log.error(details.source);
       grunt.log.error('Actual:');
       grunt.log.error(details.actual);
       grunt.log.error('Expected:');
       grunt.log.error(details.expected);
     });
-    grunt.log[details.failed ? 'error' : 'ok'](details.passed + ' of ' + details.total + ' passed, ' + details.failed + ' failed');
+    grunt.log[details.failed ? 'error' : 'ok'](`${details.passed} of ${details.total} passed, ${details.failed} failed`);
     return details.failed;
   }
 
-  var phantomjs = require('phantomjs-prebuilt').path;
+  const phantomjs = require('phantomjs-prebuilt').path;
   grunt.registerMultiTask('qunit', function() {
-    var done = this.async();
-    var errors = [];
+    const done = this.async();
+    const errors = [];
 
     function run(testType, binPath, testPath) {
       grunt.util.spawn({
         cmd: binPath,
         args: ['test.js', testPath]
-      }, function(error, result) {
+      }, (error, { stderr, stdout }) => {
         if (error) {
-          grunt.log.error(result.stderr);
-          grunt.log.error(testType + ' test failed to load');
+          grunt.log.error(stderr);
+          grunt.log.error(`${testType} test failed to load`);
           errors.push(-1);
         }
         else {
-          var output = result.stdout;
-          var index = output.lastIndexOf('\n');
+          let output = stdout;
+          const index = output.lastIndexOf('\n');
           if (index !== -1) {
             // There's something before the report JSON
             // Log it to the console -- it's probably some debug output:
@@ -168,9 +177,9 @@ module.exports = function(grunt) {
   });
 
   grunt.registerMultiTask('replace', function() {
-    var pattern = this.data[0];
-    var path = this.target;
-    var html = grunt.file.read(path);
+    const pattern = this.data[0];
+    const path = this.target;
+    let html = grunt.file.read(path);
     html = html.replace(pattern, this.data[1]);
     grunt.file.write(path, html);
   });
@@ -178,6 +187,7 @@ module.exports = function(grunt) {
   grunt.registerTask('dist', [
     'replace',
     'browserify',
+    'babel',
     'uglify'
   ]);
 

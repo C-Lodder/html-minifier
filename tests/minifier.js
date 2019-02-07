@@ -1,17 +1,18 @@
-/* global minify */
 'use strict';
 
+/* global minify */
 QUnit.config.autostart = false;
 if (typeof minify === 'undefined') {
   self.minify = require('html-minifier').minify;
 }
 
-QUnit.test('`minifiy` exists', function(assert) {
+QUnit.test('`minifiy` exists', assert => {
   assert.ok(minify);
 });
 
-QUnit.test('parsing non-trivial markup', function(assert) {
-  var input, output;
+QUnit.test('parsing non-trivial markup', assert => {
+  let input;
+  let output;
 
   assert.equal(minify('</td>'), '');
   assert.equal(minify('</p>'), '<p></p>');
@@ -61,7 +62,7 @@ QUnit.test('parsing non-trivial markup', function(assert) {
   assert.equal(minify(input), input);
 
   input = '<$unicorn>';
-  assert.throws(function() {
+  assert.throws(() => {
     minify(input);
   }, 'Invalid tag name');
 
@@ -93,7 +94,7 @@ QUnit.test('parsing non-trivial markup', function(assert) {
   // https://github.com/kangax/html-minifier/issues/507
   input = '<tag v-ref:vm_pv :imgs=" objpicsurl_ "></tag>';
   assert.equal(minify(input), input);
-  assert.throws(function() {
+  assert.throws(() => {
     minify('<tag v-ref:vm_pv :imgs=" objpicsurl_ " ss"123></tag>');
   }, 'invalid attribute name');
 
@@ -106,7 +107,7 @@ QUnit.test('parsing non-trivial markup', function(assert) {
           ' data-ng-pattern="vm.options.format"' +
           ' data-options="vm.datepickerOptions">';
   assert.equal(minify(input), input);
-  assert.throws(function() {
+  assert.throws(() => {
     minify(
       '<input class="form-control" type="text" style="" id="{{vm.formInputName}}" name="{{vm.formInputName}}"' +
       ' <!--FIXME hardcoded placeholder - dates may not be used for service required fields yet. -->' +
@@ -139,13 +140,13 @@ QUnit.test('parsing non-trivial markup', function(assert) {
   }), output);
 });
 
-QUnit.test('options', function(assert) {
-  var input = '<p>blah<span>blah 2<span>blah 3</span></span></p>';
+QUnit.test('options', assert => {
+  const input = '<p>blah<span>blah 2<span>blah 3</span></span></p>';
   assert.equal(minify(input), input);
   assert.equal(minify(input, {}), input);
 });
 
-QUnit.test('case normalization', function(assert) {
+QUnit.test('case normalization', assert => {
   assert.equal(minify('<P>foo</p>'), '<p>foo</p>');
   assert.equal(minify('<DIV>boo</DIV>'), '<div>boo</div>');
   assert.equal(minify('<DIV title="moo">boo</DiV>'), '<div title="moo">boo</div>');
@@ -154,7 +155,7 @@ QUnit.test('case normalization', function(assert) {
   assert.equal(minify('<DiV tItLe="blah">boo</DIV>'), '<div title="blah">boo</div>');
 });
 
-QUnit.test('space normalization between attributes', function(assert) {
+QUnit.test('space normalization between attributes', assert => {
   assert.equal(minify('<p title="bar">foo</p>'), '<p title="bar">foo</p>');
   assert.equal(minify('<img src="test"/>'), '<img src="test">');
   assert.equal(minify('<p title = "bar">foo</p>'), '<p title="bar">foo</p>');
@@ -163,8 +164,9 @@ QUnit.test('space normalization between attributes', function(assert) {
   assert.equal(minify('<input title="bar"       id="boo"    value="hello world">'), '<input title="bar" id="boo" value="hello world">');
 });
 
-QUnit.test('space normalization around text', function(assert) {
-  var input, output;
+QUnit.test('space normalization around text', assert => {
+  let input;
+  let output;
   input = '   <p>blah</p>\n\n\n   ';
   assert.equal(minify(input), input);
   output = '<p>blah</p>';
@@ -189,44 +191,44 @@ QUnit.test('space normalization around text', function(assert) {
     'a', 'abbr', 'acronym', 'b', 'big', 'del', 'em', 'font', 'i', 'ins', 'kbd',
     'mark', 's', 'samp', 'small', 'span', 'strike', 'strong', 'sub', 'sup',
     'time', 'tt', 'u', 'var'
-  ].forEach(function(el) {
-    assert.equal(minify('foo <' + el + '>baz</' + el + '> bar', { collapseWhitespace: true }), 'foo <' + el + '>baz</' + el + '> bar');
-    assert.equal(minify('foo<' + el + '>baz</' + el + '>bar', { collapseWhitespace: true }), 'foo<' + el + '>baz</' + el + '>bar');
-    assert.equal(minify('foo <' + el + '>baz</' + el + '>bar', { collapseWhitespace: true }), 'foo <' + el + '>baz</' + el + '>bar');
-    assert.equal(minify('foo<' + el + '>baz</' + el + '> bar', { collapseWhitespace: true }), 'foo<' + el + '>baz</' + el + '> bar');
-    assert.equal(minify('foo <' + el + '> baz </' + el + '> bar', { collapseWhitespace: true }), 'foo <' + el + '>baz </' + el + '>bar');
-    assert.equal(minify('foo<' + el + '> baz </' + el + '>bar', { collapseWhitespace: true }), 'foo<' + el + '> baz </' + el + '>bar');
-    assert.equal(minify('foo <' + el + '> baz </' + el + '>bar', { collapseWhitespace: true }), 'foo <' + el + '>baz </' + el + '>bar');
-    assert.equal(minify('foo<' + el + '> baz </' + el + '> bar', { collapseWhitespace: true }), 'foo<' + el + '> baz </' + el + '>bar');
-    assert.equal(minify('<div>foo <' + el + '>baz</' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz</' + el + '> bar</div>');
-    assert.equal(minify('<div>foo<' + el + '>baz</' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '>baz</' + el + '>bar</div>');
-    assert.equal(minify('<div>foo <' + el + '>baz</' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz</' + el + '>bar</div>');
-    assert.equal(minify('<div>foo<' + el + '>baz</' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '>baz</' + el + '> bar</div>');
-    assert.equal(minify('<div>foo <' + el + '> baz </' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz </' + el + '>bar</div>');
-    assert.equal(minify('<div>foo<' + el + '> baz </' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '> baz </' + el + '>bar</div>');
-    assert.equal(minify('<div>foo <' + el + '> baz </' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz </' + el + '>bar</div>');
-    assert.equal(minify('<div>foo<' + el + '> baz </' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '> baz </' + el + '>bar</div>');
+  ].forEach(el => {
+    assert.equal(minify(`foo <${el}>baz</${el}> bar`, { collapseWhitespace: true }), `foo <${el}>baz</${el}> bar`);
+    assert.equal(minify(`foo<${el}>baz</${el}>bar`, { collapseWhitespace: true }), `foo<${el}>baz</${el}>bar`);
+    assert.equal(minify(`foo <${el}>baz</${el}>bar`, { collapseWhitespace: true }), `foo <${el}>baz</${el}>bar`);
+    assert.equal(minify(`foo<${el}>baz</${el}> bar`, { collapseWhitespace: true }), `foo<${el}>baz</${el}> bar`);
+    assert.equal(minify(`foo <${el}> baz </${el}> bar`, { collapseWhitespace: true }), `foo <${el}>baz </${el}>bar`);
+    assert.equal(minify(`foo<${el}> baz </${el}>bar`, { collapseWhitespace: true }), `foo<${el}> baz </${el}>bar`);
+    assert.equal(minify(`foo <${el}> baz </${el}>bar`, { collapseWhitespace: true }), `foo <${el}>baz </${el}>bar`);
+    assert.equal(minify(`foo<${el}> baz </${el}> bar`, { collapseWhitespace: true }), `foo<${el}> baz </${el}>bar`);
+    assert.equal(minify(`<div>foo <${el}>baz</${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz</${el}> bar</div>`);
+    assert.equal(minify(`<div>foo<${el}>baz</${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}>baz</${el}>bar</div>`);
+    assert.equal(minify(`<div>foo <${el}>baz</${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz</${el}>bar</div>`);
+    assert.equal(minify(`<div>foo<${el}>baz</${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}>baz</${el}> bar</div>`);
+    assert.equal(minify(`<div>foo <${el}> baz </${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz </${el}>bar</div>`);
+    assert.equal(minify(`<div>foo<${el}> baz </${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}> baz </${el}>bar</div>`);
+    assert.equal(minify(`<div>foo <${el}> baz </${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz </${el}>bar</div>`);
+    assert.equal(minify(`<div>foo<${el}> baz </${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}> baz </${el}>bar</div>`);
   });
   // Don't trim whitespace around element, but do trim within
   [
     'bdi', 'bdo', 'button', 'cite', 'code', 'dfn', 'math', 'q', 'rt', 'rtc', 'ruby', 'svg'
-  ].forEach(function(el) {
-    assert.equal(minify('foo <' + el + '>baz</' + el + '> bar', { collapseWhitespace: true }), 'foo <' + el + '>baz</' + el + '> bar');
-    assert.equal(minify('foo<' + el + '>baz</' + el + '>bar', { collapseWhitespace: true }), 'foo<' + el + '>baz</' + el + '>bar');
-    assert.equal(minify('foo <' + el + '>baz</' + el + '>bar', { collapseWhitespace: true }), 'foo <' + el + '>baz</' + el + '>bar');
-    assert.equal(minify('foo<' + el + '>baz</' + el + '> bar', { collapseWhitespace: true }), 'foo<' + el + '>baz</' + el + '> bar');
-    assert.equal(minify('foo <' + el + '> baz </' + el + '> bar', { collapseWhitespace: true }), 'foo <' + el + '>baz</' + el + '> bar');
-    assert.equal(minify('foo<' + el + '> baz </' + el + '>bar', { collapseWhitespace: true }), 'foo<' + el + '>baz</' + el + '>bar');
-    assert.equal(minify('foo <' + el + '> baz </' + el + '>bar', { collapseWhitespace: true }), 'foo <' + el + '>baz</' + el + '>bar');
-    assert.equal(minify('foo<' + el + '> baz </' + el + '> bar', { collapseWhitespace: true }), 'foo<' + el + '>baz</' + el + '> bar');
-    assert.equal(minify('<div>foo <' + el + '>baz</' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz</' + el + '> bar</div>');
-    assert.equal(minify('<div>foo<' + el + '>baz</' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '>baz</' + el + '>bar</div>');
-    assert.equal(minify('<div>foo <' + el + '>baz</' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz</' + el + '>bar</div>');
-    assert.equal(minify('<div>foo<' + el + '>baz</' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '>baz</' + el + '> bar</div>');
-    assert.equal(minify('<div>foo <' + el + '> baz </' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz</' + el + '> bar</div>');
-    assert.equal(minify('<div>foo<' + el + '> baz </' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '>baz</' + el + '>bar</div>');
-    assert.equal(minify('<div>foo <' + el + '> baz </' + el + '>bar</div>', { collapseWhitespace: true }), '<div>foo <' + el + '>baz</' + el + '>bar</div>');
-    assert.equal(minify('<div>foo<' + el + '> baz </' + el + '> bar</div>', { collapseWhitespace: true }), '<div>foo<' + el + '>baz</' + el + '> bar</div>');
+  ].forEach(el => {
+    assert.equal(minify(`foo <${el}>baz</${el}> bar`, { collapseWhitespace: true }), `foo <${el}>baz</${el}> bar`);
+    assert.equal(minify(`foo<${el}>baz</${el}>bar`, { collapseWhitespace: true }), `foo<${el}>baz</${el}>bar`);
+    assert.equal(minify(`foo <${el}>baz</${el}>bar`, { collapseWhitespace: true }), `foo <${el}>baz</${el}>bar`);
+    assert.equal(minify(`foo<${el}>baz</${el}> bar`, { collapseWhitespace: true }), `foo<${el}>baz</${el}> bar`);
+    assert.equal(minify(`foo <${el}> baz </${el}> bar`, { collapseWhitespace: true }), `foo <${el}>baz</${el}> bar`);
+    assert.equal(minify(`foo<${el}> baz </${el}>bar`, { collapseWhitespace: true }), `foo<${el}>baz</${el}>bar`);
+    assert.equal(minify(`foo <${el}> baz </${el}>bar`, { collapseWhitespace: true }), `foo <${el}>baz</${el}>bar`);
+    assert.equal(minify(`foo<${el}> baz </${el}> bar`, { collapseWhitespace: true }), `foo<${el}>baz</${el}> bar`);
+    assert.equal(minify(`<div>foo <${el}>baz</${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz</${el}> bar</div>`);
+    assert.equal(minify(`<div>foo<${el}>baz</${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}>baz</${el}>bar</div>`);
+    assert.equal(minify(`<div>foo <${el}>baz</${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz</${el}>bar</div>`);
+    assert.equal(minify(`<div>foo<${el}>baz</${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}>baz</${el}> bar</div>`);
+    assert.equal(minify(`<div>foo <${el}> baz </${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz</${el}> bar</div>`);
+    assert.equal(minify(`<div>foo<${el}> baz </${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}>baz</${el}>bar</div>`);
+    assert.equal(minify(`<div>foo <${el}> baz </${el}>bar</div>`, { collapseWhitespace: true }), `<div>foo <${el}>baz</${el}>bar</div>`);
+    assert.equal(minify(`<div>foo<${el}> baz </${el}> bar</div>`, { collapseWhitespace: true }), `<div>foo<${el}>baz</${el}> bar</div>`);
   });
   [
     ['<span> foo </span>', '<span>foo</span>'],
@@ -251,18 +253,18 @@ QUnit.test('space normalization around text', function(assert) {
     ['a <nobr>b </nobr> c', 'a <nobr>b</nobr> c'],
     ['a <nobr> b</nobr> c', 'a <nobr>b</nobr> c'],
     ['a <nobr> b </nobr> c', 'a <nobr>b</nobr> c']
-  ].forEach(function(inputs) {
+  ].forEach(inputs => {
     assert.equal(minify(inputs[0], {
       collapseWhitespace: true,
       conservativeCollapse: true
     }), inputs[0], inputs[0]);
     assert.equal(minify(inputs[0], { collapseWhitespace: true }), inputs[1], inputs[0]);
-    var input = '<div>' + inputs[0] + '</div>';
+    const input = `<div>${inputs[0]}</div>`;
     assert.equal(minify(input, {
       collapseWhitespace: true,
       conservativeCollapse: true
     }), input, input);
-    var output = '<div>' + inputs[1] + '</div>';
+    const output = `<div>${inputs[1]}</div>`;
     assert.equal(minify(input, { collapseWhitespace: true }), output, input);
   });
   assert.equal(minify('<p>foo <img> bar</p>', { collapseWhitespace: true }), '<p>foo <img> bar</p>');
@@ -295,7 +297,7 @@ QUnit.test('space normalization around text', function(assert) {
     ' a <? b ?> <!-- d -->c ',
     ' a <? b ?> c<!-- d --> ',
     ' a <? b ?> c <!-- d -->'
-  ].forEach(function(input) {
+  ].forEach(input => {
     assert.equal(minify(input, {
       collapseWhitespace: true,
       conservativeCollapse: true
@@ -309,7 +311,7 @@ QUnit.test('space normalization around text', function(assert) {
       conservativeCollapse: true,
       removeComments: true
     }), ' a <? b ?> c ', input);
-    input = '<p>' + input + '</p>';
+    input = `<p>${input}</p>`;
     assert.equal(minify(input, {
       collapseWhitespace: true,
       conservativeCollapse: true
@@ -364,13 +366,13 @@ QUnit.test('space normalization around text', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true }), output);
 });
 
-QUnit.test('types of whitespace that should always be preserved', function(assert) {
+QUnit.test('types of whitespace that should always be preserved', assert => {
   // Hair space:
-  var input = '<div>\u200afo\u200ao\u200a</div>';
+  let input = '<div>\u200afo\u200ao\u200a</div>';
   assert.equal(minify(input, { collapseWhitespace: true }), input);
 
   // Hair space passed as HTML entity:
-  var inputWithEntities = '<div>&#8202;fo&#8202;o&#8202;</div>';
+  let inputWithEntities = '<div>&#8202;fo&#8202;o&#8202;</div>';
   assert.equal(minify(inputWithEntities, { collapseWhitespace: true }), inputWithEntities);
 
   // Hair space passed as HTML entity, in decodeEntities:true mode:
@@ -402,9 +404,9 @@ QUnit.test('types of whitespace that should always be preserved', function(asser
   assert.equal(minify(input, { sortClassName: true }), input);
 });
 
-QUnit.test('doctype normalization', function(assert) {
-  var input;
-  var output = '<!doctype html>';
+QUnit.test('doctype normalization', assert => {
+  let input;
+  const output = '<!doctype html>';
 
   input = '<!DOCTYPE html>';
   assert.equal(minify(input, { useShortDoctype: false }), input);
@@ -428,8 +430,8 @@ QUnit.test('doctype normalization', function(assert) {
   assert.equal(minify(input, { useShortDoctype: true }), output);
 });
 
-QUnit.test('removing comments', function(assert) {
-  var input;
+QUnit.test('removing comments', assert => {
+  let input;
 
   input = '<!-- test -->';
   assert.equal(minify(input, { removeComments: true }), '');
@@ -448,8 +450,9 @@ QUnit.test('removing comments', function(assert) {
   assert.equal(minify(input, { removeComments: true }), '<style><!-- alert(1) --></style>');
 });
 
-QUnit.test('ignoring comments', function(assert) {
-  var input, output;
+QUnit.test('ignoring comments', assert => {
+  let input;
+  let output;
 
   input = '<!--! test -->';
   assert.equal(minify(input, { removeComments: true }), input);
@@ -478,8 +481,9 @@ QUnit.test('ignoring comments', function(assert) {
   assert.equal(minify(input, { removeComments: true }), input);
 });
 
-QUnit.test('conditional comments', function(assert) {
-  var input, output;
+QUnit.test('conditional comments', assert => {
+  let input;
+  let output;
 
   input = '<![if IE 5]>test<![endif]>';
   assert.equal(minify(input, { removeComments: true }), input);
@@ -569,8 +573,9 @@ QUnit.test('conditional comments', function(assert) {
   }), output);
 });
 
-QUnit.test('collapsing space in conditional comments', function(assert) {
-  var input, output;
+QUnit.test('collapsing space in conditional comments', assert => {
+  let input;
+  let output;
 
   input = '<!--[if IE 7]>\n\n   \t\n   \t\t ' +
             '<link rel="stylesheet" href="/css/ie7-fixes.css" type="text/css" />\n\t' +
@@ -605,8 +610,9 @@ QUnit.test('collapsing space in conditional comments', function(assert) {
   }), output);
 });
 
-QUnit.test('remove comments from scripts', function(assert) {
-  var input, output;
+QUnit.test('remove comments from scripts', assert => {
+  let input;
+  let output;
 
   input = '<script><!--\nalert(1);\n--></script>';
   assert.equal(minify(input), input);
@@ -655,8 +661,9 @@ QUnit.test('remove comments from scripts', function(assert) {
   assert.equal(minify(input, { minifyJS: true }), input);
 });
 
-QUnit.test('remove comments from styles', function(assert) {
-  var input, output;
+QUnit.test('remove comments from styles', assert => {
+  let input;
+  let output;
 
   input = '<style><!--\np.a{background:red}\n--></style>';
   assert.equal(minify(input), input);
@@ -703,8 +710,9 @@ QUnit.test('remove comments from styles', function(assert) {
   assert.equal(minify(input, { minifyCSS: true }), input);
 });
 
-QUnit.test('remove CDATA sections from scripts/styles', function(assert) {
-  var input, output;
+QUnit.test('remove CDATA sections from scripts/styles', assert => {
+  let input;
+  let output;
 
   input = '<script><![CDATA[\nalert(1)\n]]></script>';
   assert.equal(minify(input), input);
@@ -786,11 +794,12 @@ QUnit.test('remove CDATA sections from scripts/styles', function(assert) {
   assert.equal(minify(input, { minifyCSS: true }), input);
 });
 
-QUnit.test('custom processors', function(assert) {
-  var input, output;
+QUnit.test('custom processors', assert => {
+  let input;
+  let output;
 
   function css(text, type) {
-    return (type || 'Normal') + ' CSS';
+    return `${type || 'Normal'} CSS`;
   }
 
   input = '<style>\n.foo { font: 12pt "bar" } </style>';
@@ -859,8 +868,8 @@ QUnit.test('custom processors', function(assert) {
   assert.equal(minify(input, { minifyCSS: true, minifyURLs: url }), output);
 });
 
-QUnit.test('empty attributes', function(assert) {
-  var input;
+QUnit.test('empty attributes', assert => {
+  let input;
 
   input = '<p id="" class="" STYLE=" " title="\n" lang="" dir="">x</p>';
   assert.equal(minify(input, { removeEmptyAttributes: true }), '<p>x</p>');
@@ -885,11 +894,12 @@ QUnit.test('empty attributes', function(assert) {
 
   // additional remove attributes
   input = '<img src="" alt="">';
-  assert.equal(minify(input, { removeEmptyAttributes: function(attrName, tag) { return tag === 'img' && attrName === 'src'; } }), '<img alt="">');
+  assert.equal(minify(input, { removeEmptyAttributes(attrName, tag) { return tag === 'img' && attrName === 'src'; } }), '<img alt="">');
 });
 
-QUnit.test('cleaning class/style attributes', function(assert) {
-  var input, output;
+QUnit.test('cleaning class/style attributes', assert => {
+  let input;
+  let output;
 
   input = '<p class=" foo bar  ">foo bar baz</p>';
   assert.equal(minify(input), '<p class="foo bar">foo bar baz</p>');
@@ -915,8 +925,9 @@ QUnit.test('cleaning class/style attributes', function(assert) {
   assert.equal(minify(input), output);
 });
 
-QUnit.test('cleaning URI-based attributes', function(assert) {
-  var input, output;
+QUnit.test('cleaning URI-based attributes', assert => {
+  let input;
+  let output;
 
   input = '<a href="   http://example.com  ">x</a>';
   output = '<a href="http://example.com">x</a>';
@@ -957,8 +968,9 @@ QUnit.test('cleaning URI-based attributes', function(assert) {
   assert.equal(minify(input), input);
 });
 
-QUnit.test('cleaning Number-based attributes', function(assert) {
-  var input, output;
+QUnit.test('cleaning Number-based attributes', assert => {
+  let input;
+  let output;
 
   input = '<a href="#" tabindex="   1  ">x</a><button tabindex="   2  ">y</button>';
   output = '<a href="#" tabindex="1">x</a><button tabindex="2">y</button>';
@@ -985,8 +997,9 @@ QUnit.test('cleaning Number-based attributes', function(assert) {
   assert.equal(minify(input), output);
 });
 
-QUnit.test('cleaning other attributes', function(assert) {
-  var input, output;
+QUnit.test('cleaning other attributes', assert => {
+  let input;
+  let output;
 
   input = '<a href="#" onclick="  window.prompt(\'boo\'); " onmouseover=" \n\n alert(123)  \t \n\t  ">blah</a>';
   output = '<a href="#" onclick="window.prompt(\'boo\');" onmouseover="alert(123)">blah</a>';
@@ -997,8 +1010,8 @@ QUnit.test('cleaning other attributes', function(assert) {
   assert.equal(minify(input), output);
 });
 
-QUnit.test('removing redundant attributes (&lt;form method="get" ...>)', function(assert) {
-  var input;
+QUnit.test('removing redundant attributes (&lt;form method="get" ...>)', assert => {
+  let input;
 
   input = '<form method="get">hello world</form>';
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<form>hello world</form>');
@@ -1007,8 +1020,8 @@ QUnit.test('removing redundant attributes (&lt;form method="get" ...>)', functio
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<form method="post">hello world</form>');
 });
 
-QUnit.test('removing redundant attributes (&lt;input type="text" ...>)', function(assert) {
-  var input;
+QUnit.test('removing redundant attributes (&lt;input type="text" ...>)', assert => {
+  let input;
 
   input = '<input type="text">';
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<input>');
@@ -1020,8 +1033,8 @@ QUnit.test('removing redundant attributes (&lt;input type="text" ...>)', functio
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<input type="checkbox">');
 });
 
-QUnit.test('removing redundant attributes (&lt;a name="..." id="..." ...>)', function(assert) {
-  var input;
+QUnit.test('removing redundant attributes (&lt;a name="..." id="..." ...>)', assert => {
+  let input;
 
   input = '<a id="foo" name="foo">blah</a>';
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<a id="foo">blah</a>');
@@ -1036,8 +1049,9 @@ QUnit.test('removing redundant attributes (&lt;a name="..." id="..." ...>)', fun
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<a href="..." id="bar">blah</a>');
 });
 
-QUnit.test('removing redundant attributes (&lt;script src="..." charset="...">)', function(assert) {
-  var input, output;
+QUnit.test('removing redundant attributes (&lt;script src="..." charset="...">)', assert => {
+  let input;
+  let output;
 
   input = '<script type="text/javascript" charset="UTF-8">alert(222);</script>';
   output = '<script type="text/javascript">alert(222);</script>';
@@ -1051,8 +1065,8 @@ QUnit.test('removing redundant attributes (&lt;script src="..." charset="...">)'
   assert.equal(minify(input, { removeRedundantAttributes: true }), output);
 });
 
-QUnit.test('removing redundant attributes (&lt;... language="javascript" ...>)', function(assert) {
-  var input;
+QUnit.test('removing redundant attributes (&lt;... language="javascript" ...>)', assert => {
+  let input;
 
   input = '<script language="Javascript">x=2,y=4</script>';
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<script>x=2,y=4</script>');
@@ -1061,14 +1075,14 @@ QUnit.test('removing redundant attributes (&lt;... language="javascript" ...>)',
   assert.equal(minify(input, { removeRedundantAttributes: true }), '<script>x=2,y=4</script>');
 });
 
-QUnit.test('removing redundant attributes (&lt;area shape="rect" ...>)', function(assert) {
-  var input = '<area shape="rect" coords="696,25,958,47" href="#" title="foo">';
-  var output = '<area coords="696,25,958,47" href="#" title="foo">';
+QUnit.test('removing redundant attributes (&lt;area shape="rect" ...>)', assert => {
+  const input = '<area shape="rect" coords="696,25,958,47" href="#" title="foo">';
+  const output = '<area coords="696,25,958,47" href="#" title="foo">';
   assert.equal(minify(input, { removeRedundantAttributes: true }), output);
 });
 
-QUnit.test('removing redundant attributes (&lt;... = "javascript: ..." ...>)', function(assert) {
-  var input;
+QUnit.test('removing redundant attributes (&lt;... = "javascript: ..." ...>)', assert => {
+  let input;
 
   input = '<p onclick="javascript:alert(1)">x</p>';
   assert.equal(minify(input), '<p onclick="alert(1)">x</p>');
@@ -1083,8 +1097,9 @@ QUnit.test('removing redundant attributes (&lt;... = "javascript: ..." ...>)', f
   assert.equal(minify(input), input);
 });
 
-QUnit.test('removing javascript type attributes', function(assert) {
-  var input, output;
+QUnit.test('removing javascript type attributes', assert => {
+  let input;
+  let output;
 
   input = '<script type="">alert(1)</script>';
   assert.equal(minify(input, { removeScriptTypeAttributes: false }), input);
@@ -1109,8 +1124,9 @@ QUnit.test('removing javascript type attributes', function(assert) {
   assert.equal(minify(input, { removeScriptTypeAttributes: true }), output);
 });
 
-QUnit.test('removing type="text/css" attributes', function(assert) {
-  var input, output;
+QUnit.test('removing type="text/css" attributes', assert => {
+  let input;
+  let output;
 
   input = '<style type="">.foo { color: red }</style>';
   assert.equal(minify(input, { removeStyleLinkTypeAttributes: false }), input);
@@ -1137,8 +1153,8 @@ QUnit.test('removing type="text/css" attributes', function(assert) {
   assert.equal(minify(input, { removeStyleLinkTypeAttributes: true }), input);
 });
 
-QUnit.test('removing attribute quotes', function(assert) {
-  var input;
+QUnit.test('removing attribute quotes', assert => {
+  let input;
 
   input = '<p title="blah" class="a23B-foo.bar_baz:qux" id="moo">foo</p>';
   assert.equal(minify(input, { removeAttributeQuotes: true }), '<p title=blah class=a23B-foo.bar_baz:qux id=moo>foo</p>');
@@ -1162,8 +1178,9 @@ QUnit.test('removing attribute quotes', function(assert) {
   assert.equal(minify(input, { removeAttributeQuotes: true }), '<p class=foo|bar:baz></p>');
 });
 
-QUnit.test('preserving custom attribute-wrapping markup', function(assert) {
-  var input, customAttrOptions;
+QUnit.test('preserving custom attribute-wrapping markup', assert => {
+  let input;
+  let customAttrOptions;
 
   // With a single rule
   customAttrOptions = {
@@ -1216,10 +1233,10 @@ QUnit.test('preserving custom attribute-wrapping markup', function(assert) {
   assert.equal(minify(input, customAttrOptions), '<input {{#if value1}}checked {{/if}}{{#if value2}}data-attr=foo {{/if}}/>');
 });
 
-QUnit.test('preserving custom attribute-joining markup', function(assert) {
-  var input;
-  var polymerConditionalAttributeJoin = /\?=/;
-  var customAttrOptions = {
+QUnit.test('preserving custom attribute-joining markup', assert => {
+  let input;
+  const polymerConditionalAttributeJoin = /\?=/;
+  const customAttrOptions = {
     customAttrAssign: [polymerConditionalAttributeJoin]
   };
   input = '<div flex?="{{mode != cover}}"></div>';
@@ -1228,8 +1245,9 @@ QUnit.test('preserving custom attribute-joining markup', function(assert) {
   assert.equal(minify(input, customAttrOptions), input);
 });
 
-QUnit.test('collapsing whitespace', function(assert) {
-  var input, output;
+QUnit.test('collapsing whitespace', assert => {
+  let input;
+  let output;
 
   input = '<script type="text/javascript">  \n\t   alert(1) \n\n\n  \t </script>';
   output = '<script type="text/javascript">alert(1)</script>';
@@ -1300,8 +1318,9 @@ QUnit.test('collapsing whitespace', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true }), output);
 });
 
-QUnit.test('removing empty elements', function(assert) {
-  var input, output;
+QUnit.test('removing empty elements', assert => {
+  let input;
+  let output;
 
   assert.equal(minify('<p>x</p>', { removeEmptyElements: true }), '<p>x</p>');
   assert.equal(minify('<p></p>', { removeEmptyElements: true }), '');
@@ -1408,8 +1427,9 @@ QUnit.test('removing empty elements', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true, removeEmptyElements: true }), output);
 });
 
-QUnit.test('collapsing boolean attributes', function(assert) {
-  var input, output;
+QUnit.test('collapsing boolean attributes', assert => {
+  let input;
+  let output;
 
   input = '<input disabled="disabled">';
   assert.equal(minify(input, { collapseBooleanAttributes: true }), '<input disabled>');
@@ -1447,7 +1467,7 @@ QUnit.test('collapsing boolean attributes', function(assert) {
   assert.equal(minify(input, { collapseBooleanAttributes: true, caseSensitive: true }), output);
 });
 
-QUnit.test('collapsing enumerated attributes', function(assert) {
+QUnit.test('collapsing enumerated attributes', assert => {
   assert.equal(minify('<div draggable="auto"></div>', { collapseBooleanAttributes: true }), '<div draggable></div>');
   assert.equal(minify('<div draggable="true"></div>', { collapseBooleanAttributes: true }), '<div draggable="true"></div>');
   assert.equal(minify('<div draggable="false"></div>', { collapseBooleanAttributes: true }), '<div draggable="false"></div>');
@@ -1461,7 +1481,7 @@ QUnit.test('collapsing enumerated attributes', function(assert) {
   assert.equal(minify('<div draggable="Auto"></div>', { collapseBooleanAttributes: true }), '<div draggable></div>');
 });
 
-QUnit.test('keeping trailing slashes in tags', function(assert) {
+QUnit.test('keeping trailing slashes in tags', assert => {
   assert.equal(minify('<img src="test"/>', { keepClosingSlash: true }), '<img src="test"/>');
   // https://github.com/kangax/html-minifier/issues/233
   assert.equal(minify('<img src="test"/>', { keepClosingSlash: true, removeAttributeQuotes: true }), '<img src=test />');
@@ -1469,8 +1489,9 @@ QUnit.test('keeping trailing slashes in tags', function(assert) {
   assert.equal(minify('<img title="foo" src="test"/>', { keepClosingSlash: true, removeAttributeQuotes: true }), '<img title=foo src=test />');
 });
 
-QUnit.test('removing optional tags', function(assert) {
-  var input, output;
+QUnit.test('removing optional tags', assert => {
+  let input;
+  let output;
 
   input = '<p>foo';
   assert.equal(minify(input, { removeOptionalTags: true }), input);
@@ -1564,8 +1585,9 @@ QUnit.test('removing optional tags', function(assert) {
   assert.equal(minify(input, { removeOptionalTags: true }), input);
 });
 
-QUnit.test('removing optional tags in tables', function(assert) {
-  var input, output;
+QUnit.test('removing optional tags in tables', assert => {
+  let input;
+  let output;
 
   input = '<table>' +
             '<thead><tr><th>foo</th><th>bar</th> <th>baz</th></tr></thead> ' +
@@ -1624,8 +1646,9 @@ QUnit.test('removing optional tags in tables', function(assert) {
   assert.equal(minify(input, { removeOptionalTags: true }), output);
 });
 
-QUnit.test('removing optional tags in options', function(assert) {
-  var input, output;
+QUnit.test('removing optional tags in options', assert => {
+  let input;
+  let output;
 
   input = '<select><option>foo</option><option>bar</option></select>';
   output = '<select><option>foo<option>bar</select>';
@@ -1661,41 +1684,42 @@ QUnit.test('removing optional tags in options', function(assert) {
   assert.equal(minify(input, { removeOptionalTags: true }), output);
 });
 
-QUnit.test('custom components', function(assert) {
-  var input = '<custom-component>Oh, my.</custom-component>';
-  var output = '<custom-component>Oh, my.</custom-component>';
+QUnit.test('custom components', assert => {
+  const input = '<custom-component>Oh, my.</custom-component>';
+  const output = '<custom-component>Oh, my.</custom-component>';
   assert.equal(minify(input), output);
 });
 
-QUnit.test('HTML4: anchor with inline elements', function(assert) {
-  var input = '<a href="#"><span>Well, look at me! I\'m a span!</span></a>';
+QUnit.test('HTML4: anchor with inline elements', assert => {
+  const input = '<a href="#"><span>Well, look at me! I\'m a span!</span></a>';
   assert.equal(minify(input, { html5: false }), input);
 });
 
-QUnit.test('HTML5: anchor with inline elements', function(assert) {
-  var input = '<a href="#"><span>Well, look at me! I\'m a span!</span></a>';
+QUnit.test('HTML5: anchor with inline elements', assert => {
+  const input = '<a href="#"><span>Well, look at me! I\'m a span!</span></a>';
   assert.equal(minify(input, { html5: true }), input);
 });
 
-QUnit.test('HTML4: anchor with block elements', function(assert) {
-  var input = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
-  var output = '<a href="#"></a><div>Well, look at me! I\'m a div!</div>';
+QUnit.test('HTML4: anchor with block elements', assert => {
+  const input = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
+  const output = '<a href="#"></a><div>Well, look at me! I\'m a div!</div>';
   assert.equal(minify(input, { html5: false }), output);
 });
 
-QUnit.test('HTML5: anchor with block elements', function(assert) {
-  var input = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
-  var output = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
+QUnit.test('HTML5: anchor with block elements', assert => {
+  const input = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
+  const output = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
   assert.equal(minify(input, { html5: true }), output);
 });
 
-QUnit.test('HTML5: enabled by default', function(assert) {
-  var input = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
+QUnit.test('HTML5: enabled by default', assert => {
+  const input = '<a href="#"><div>Well, look at me! I\'m a div!</div></a>';
   assert.equal(minify(input, { html5: true }), minify(input));
 });
 
-QUnit.test('phrasing content', function(assert) {
-  var input, output;
+QUnit.test('phrasing content', assert => {
+  let input;
+  let output;
 
   input = '<p>a<div>b</div>';
   output = '<p>a</p><div>b</div>';
@@ -1708,8 +1732,9 @@ QUnit.test('phrasing content', function(assert) {
 });
 
 // https://github.com/kangax/html-minifier/issues/888
-QUnit.test('ul/ol should be phrasing content', function(assert) {
-  var input, output;
+QUnit.test('ul/ol should be phrasing content', assert => {
+  let input;
+  let output;
 
   input = '<p>a<ul><li>item</li></ul>';
   output = '<p>a</p><ul><li>item</li></ul>';
@@ -1732,16 +1757,17 @@ QUnit.test('ul/ol should be phrasing content', function(assert) {
   assert.equal(minify(input, { html5: true, removeEmptyElements: true }), output);
 });
 
-QUnit.test('phrasing content with Web Components', function(assert) {
-  var input = '<span><phrasing-element></phrasing-element></span>';
-  var output = '<span><phrasing-element></phrasing-element></span>';
+QUnit.test('phrasing content with Web Components', assert => {
+  const input = '<span><phrasing-element></phrasing-element></span>';
+  const output = '<span><phrasing-element></phrasing-element></span>';
   assert.equal(minify(input, { html5: true }), output);
 });
 
 // https://github.com/kangax/html-minifier/issues/10
-QUnit.test('Ignore custom fragments', function(assert) {
-  var input, output;
-  var reFragments = [/<\?[^?]+\?>/, /<%[^%]+%>/, /\{\{[^}]*\}\}/];
+QUnit.test('Ignore custom fragments', assert => {
+  let input;
+  let output;
+  const reFragments = [/<\?[^?]+\?>/, /<%[^%]+%>/, /\{\{[^}]*\}\}/];
 
   input = 'This is the start. <% ... %>\r\n<%= ... %>\r\n<? ... ?>\r\n<!-- This is the middle, and a comment. -->\r\nNo comment, but middle.\r\n{{ ... }}\r\n<?php ... ?>\r\n<?xml ... ?>\r\nHello, this is the end!';
   output = 'This is the start. <% ... %> <%= ... %> <? ... ?> No comment, but middle. {{ ... }} <?php ... ?> <?xml ... ?> Hello, this is the end!';
@@ -1966,26 +1992,26 @@ QUnit.test('Ignore custom fragments', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true }), input);
 });
 
-QUnit.test('bootstrap\'s span > button > span', function(assert) {
-  var input = '<span class="input-group-btn">' +
+QUnit.test('bootstrap\'s span > button > span', assert => {
+  const input = '<span class="input-group-btn">' +
                 '\n  <button class="btn btn-default" type="button">' +
                   '\n    <span class="glyphicon glyphicon-search"></span>' +
                 '\n  </button>' +
               '</span>';
-  var output = '<span class=input-group-btn><button class="btn btn-default" type=button><span class="glyphicon glyphicon-search"></span></button></span>';
+  const output = '<span class=input-group-btn><button class="btn btn-default" type=button><span class="glyphicon glyphicon-search"></span></button></span>';
   assert.equal(minify(input, { collapseWhitespace: true, removeAttributeQuotes: true }), output);
 });
 
-QUnit.test('caseSensitive', function(assert) {
-  var input = '<div mixedCaseAttribute="value"></div>';
-  var caseSensitiveOutput = '<div mixedCaseAttribute="value"></div>';
-  var caseInSensitiveOutput = '<div mixedcaseattribute="value"></div>';
+QUnit.test('caseSensitive', assert => {
+  const input = '<div mixedCaseAttribute="value"></div>';
+  const caseSensitiveOutput = '<div mixedCaseAttribute="value"></div>';
+  const caseInSensitiveOutput = '<div mixedcaseattribute="value"></div>';
   assert.equal(minify(input), caseInSensitiveOutput);
   assert.equal(minify(input, { caseSensitive: true }), caseSensitiveOutput);
 });
 
-QUnit.test('source & track', function(assert) {
-  var input = '<audio controls="controls">' +
+QUnit.test('source & track', assert => {
+  const input = '<audio controls="controls">' +
                 '<source src="foo.wav">' +
                 '<source src="far.wav">' +
                 '<source src="foobar.wav">' +
@@ -1995,8 +2021,8 @@ QUnit.test('source & track', function(assert) {
   assert.equal(minify(input, { removeOptionalTags: true }), input);
 });
 
-QUnit.test('mixed html and svg', function(assert) {
-  var input = '<html><body>\n' +
+QUnit.test('mixed html and svg', assert => {
+  const input = '<html><body>\n' +
     '  <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"\n' +
     '     width="612px" height="502.174px" viewBox="0 65.326 612 502.174" enable-background="new 0 65.326 612 502.174"\n' +
     '     xml:space="preserve" class="logo">' +
@@ -2009,7 +2035,7 @@ QUnit.test('mixed html and svg', function(assert) {
     '    </filter>\n' +
     '  </svg>\n' +
     '</body></html>';
-  var output = '<html><body>' +
+  const output = '<html><body>' +
     '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="612px" height="502.174px" viewBox="0 65.326 612 502.174" enable-background="new 0 65.326 612 502.174" xml:space="preserve" class="logo">' +
     '<ellipse class="ground" cx="283.5" cy="487.5" rx="259" ry="80"/>' +
     '<polygon points="100,10 40,198 190,78 10,78 160,198" style="fill:lime;stroke:purple;stroke-width:5;fill-rule:evenodd;"/>' +
@@ -2020,8 +2046,9 @@ QUnit.test('mixed html and svg', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true }), output);
 });
 
-QUnit.test('nested quotes', function(assert) {
-  var input, output;
+QUnit.test('nested quotes', assert => {
+  let input;
+  let output;
 
   input = '<div data=\'{"test":"\\"test\\""}\'></div>';
   assert.equal(minify(input), input);
@@ -2031,8 +2058,9 @@ QUnit.test('nested quotes', function(assert) {
   assert.equal(minify(input, { quoteCharacter: '"' }), output);
 });
 
-QUnit.test('script minification', function(assert) {
-  var input, output;
+QUnit.test('script minification', assert => {
+  let input;
+  let output;
 
   input = '<script></script>(function(){ var foo = 1; var bar = 2; alert(foo + " " + bar); })()';
 
@@ -2050,6 +2078,11 @@ QUnit.test('script minification', function(assert) {
 
   input = '<script type="application/javascript;version=1.8">(function(){ var foo = 1; var bar = 2; alert(foo + " " + bar); })()</script>';
   output = '<script type="application/javascript;version=1.8">alert("1 2")</script>';
+
+  assert.equal(minify(input, { minifyJS: true }), output);
+
+  input = '<script>const foo = "bar"; let bar = "foo";</script>';
+  output = '<script>const foo="bar";let bar="foo"</script>';
 
   assert.equal(minify(input, { minifyJS: true }), output);
 
@@ -2077,8 +2110,9 @@ QUnit.test('script minification', function(assert) {
   assert.equal(minify(input, { minifyJS: true }), output);
 });
 
-QUnit.test('minification of scripts with different mimetypes', function(assert) {
-  var input, output;
+QUnit.test('minification of scripts with different mimetypes', assert => {
+  let input;
+  let output;
 
   input = '<script type="">function f(){  return 1  }</script>';
   output = '<script type="">function f(){return 1}</script>';
@@ -2107,8 +2141,9 @@ QUnit.test('minification of scripts with different mimetypes', function(assert) 
   assert.equal(minify(input, { minifyJS: true }), input);
 });
 
-QUnit.test('minification of scripts with custom fragments', function(assert) {
-  var input, output;
+QUnit.test('minification of scripts with custom fragments', assert => {
+  let input;
+  let output;
 
   input = '<script><?php ?></script>';
   assert.equal(minify(input, { minifyJS: true }), input);
@@ -2205,8 +2240,9 @@ QUnit.test('minification of scripts with custom fragments', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true, minifyJS: true }), output);
 });
 
-QUnit.test('event minification', function(assert) {
-  var input, output;
+QUnit.test('event minification', assert => {
+  let input;
+  let output;
 
   input = '<div only="alert(a + b)" one=";return false;"></div>';
   assert.equal(minify(input, { minifyJS: true }), input);
@@ -2262,14 +2298,15 @@ QUnit.test('event minification', function(assert) {
   assert.equal(minify(input, { minifyJS: true }), output);
 });
 
-QUnit.test('escaping closing script tag', function(assert) {
-  var input = '<script>window.jQuery || document.write(\'<script src="jquery.js"><\\/script>\')</script>';
-  var output = '<script>window.jQuery||document.write(\'<script src="jquery.js"><\\/script>\')</script>';
+QUnit.test('escaping closing script tag', assert => {
+  const input = '<script>window.jQuery || document.write(\'<script src="jquery.js"><\\/script>\')</script>';
+  const output = '<script>window.jQuery||document.write(\'<script src="jquery.js"><\\/script>\')</script>';
   assert.equal(minify(input, { minifyJS: true }), output);
 });
 
-QUnit.test('style minification', function(assert) {
-  var input, output;
+QUnit.test('style minification', assert => {
+  let input;
+  let output;
 
   input = '<style></style>div#foo { background-color: red; color: white }';
   assert.equal(minify(input, { minifyCSS: true }), input);
@@ -2340,14 +2377,14 @@ QUnit.test('style minification', function(assert) {
   }), output);
 });
 
-QUnit.test('style attribute minification', function(assert) {
-  var input = '<div style="color: red; background-color: yellow; font-family: Verdana, Arial, sans-serif;"></div>';
-  var output = '<div style="color:red;background-color:#ff0;font-family:Verdana,Arial,sans-serif"></div>';
+QUnit.test('style attribute minification', assert => {
+  const input = '<div style="color: red; background-color: yellow; font-family: Verdana, Arial, sans-serif;"></div>';
+  const output = '<div style="color:red;background-color:#ff0;font-family:Verdana,Arial,sans-serif"></div>';
   assert.equal(minify(input, { minifyCSS: true }), output);
 });
 
-QUnit.test('minification of style with custom fragments', function(assert) {
-  var input;
+QUnit.test('minification of style with custom fragments', assert => {
+  let input;
 
   input = '<style><?foo?></style>';
   assert.equal(minify(input), input);
@@ -2414,8 +2451,9 @@ QUnit.test('minification of style with custom fragments', function(assert) {
   assert.equal(minify(input, { minifyCSS: true }), input);
 });
 
-QUnit.test('url attribute minification', function(assert) {
-  var input, output;
+QUnit.test('url attribute minification', assert => {
+  let input;
+  let output;
 
   input = '<link rel="stylesheet" href="http://website.com/style.css"><form action="http://website.com/folder/folder2/index.html"><a href="http://website.com/folder/file.html">link</a></form>';
   output = '<link rel="stylesheet" href="/style.css"><form action="folder2/"><a href="file.html">link</a></form>';
@@ -2476,8 +2514,9 @@ QUnit.test('url attribute minification', function(assert) {
   assert.equal(minify(input, { minifyURLs: { site: 'http://site.com/' } }), output);
 });
 
-QUnit.test('srcset attribute minification', function(assert) {
-  var input, output;
+QUnit.test('srcset attribute minification', assert => {
+  let input;
+  let output;
   input = '<source srcset="http://site.com/foo.gif ,http://site.com/bar.jpg 1x, baz moo 42w,' +
           '\n\n\n\n\n\t    http://site.com/zo om.png 1.00x">';
   output = '<source srcset="http://site.com/foo.gif, http://site.com/bar.jpg, baz moo 42w, http://site.com/zo om.png">';
@@ -2486,19 +2525,20 @@ QUnit.test('srcset attribute minification', function(assert) {
   assert.equal(minify(input, { minifyURLs: { site: 'http://site.com/' } }), output);
 });
 
-QUnit.test('valueless attributes', function(assert) {
-  var input = '<br foo>';
+QUnit.test('valueless attributes', assert => {
+  const input = '<br foo>';
   assert.equal(minify(input), input);
 });
 
-QUnit.test('newlines becoming whitespaces', function(assert) {
-  var input = 'test\n\n<input>\n\ntest';
-  var output = 'test <input> test';
+QUnit.test('newlines becoming whitespaces', assert => {
+  const input = 'test\n\n<input>\n\ntest';
+  const output = 'test <input> test';
   assert.equal(minify(input, { collapseWhitespace: true }), output);
 });
 
-QUnit.test('conservative collapse', function(assert) {
-  var input, output;
+QUnit.test('conservative collapse', assert => {
+  let input;
+  let output;
 
   input = '<b>   foo \n\n</b>';
   output = '<b> foo </b>';
@@ -2613,8 +2653,9 @@ QUnit.test('conservative collapse', function(assert) {
   }), output);
 });
 
-QUnit.test('collapse preseving a line break', function(assert) {
-  var input, output;
+QUnit.test('collapse preseving a line break', assert => {
+  let input;
+  let output;
 
   input = '\n\n\n<!DOCTYPE html>   \n<html lang="en" class="no-js">\n' +
           '  <head>\n    <meta charset="utf-8">\n    <meta http-equiv="X-UA-Compatible" content="IE=edge">\n\n\n\n' +
@@ -2709,8 +2750,9 @@ QUnit.test('collapse preseving a line break', function(assert) {
   }), output);
 });
 
-QUnit.test('collapse inline tag whitespace', function(assert) {
-  var input, output;
+QUnit.test('collapse inline tag whitespace', assert => {
+  let input;
+  let output;
 
   input = '<button>a</button> <button>b</button>';
   assert.equal(minify(input, {
@@ -2736,8 +2778,9 @@ QUnit.test('collapse inline tag whitespace', function(assert) {
   }), output);
 });
 
-QUnit.test('ignore custom comments', function(assert) {
-  var input, output;
+QUnit.test('ignore custom comments', assert => {
+  let input;
+  let output;
 
   input = '<!--! test -->';
   assert.equal(minify(input), input);
@@ -2786,9 +2829,9 @@ QUnit.test('ignore custom comments', function(assert) {
   }), input);
 });
 
-QUnit.test('processScripts', function(assert) {
-  var input = '<script type="text/ng-template"><!--test--><div>   <span> foobar </span> \n\n</div></script>';
-  var output = '<script type="text/ng-template"><div><span>foobar</span></div></script>';
+QUnit.test('processScripts', assert => {
+  const input = '<script type="text/ng-template"><!--test--><div>   <span> foobar </span> \n\n</div></script>';
+  const output = '<script type="text/ng-template"><div><span>foobar</span></div></script>';
   assert.equal(minify(input, {
     collapseWhitespace: true,
     removeComments: true,
@@ -2796,8 +2839,9 @@ QUnit.test('processScripts', function(assert) {
   }), output);
 });
 
-QUnit.test('ignore', function(assert) {
-  var input, output;
+QUnit.test('ignore', assert => {
+  let input;
+  let output;
 
   input = '<!-- htmlmin:ignore --><div class="blah" style="color: red">\n   test   <span> <input disabled/>  foo </span>\n\n   </div><!-- htmlmin:ignore -->' +
           '<div class="blah" style="color: red">\n   test   <span> <input disabled/>  foo </span>\n\n   </div>';
@@ -2837,8 +2881,9 @@ QUnit.test('ignore', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true }), output);
 });
 
-QUnit.test('meta viewport', function(assert) {
-  var input, output;
+QUnit.test('meta viewport', assert => {
+  let input;
+  let output;
 
   input = '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
   output = '<meta name="viewport" content="width=device-width,initial-scale=1">';
@@ -2857,14 +2902,14 @@ QUnit.test('meta viewport', function(assert) {
   assert.equal(minify(input), output);
 });
 
-QUnit.test('downlevel-revealed conditional comments', function(assert) {
-  var input = '<![if !IE]><link href="non-ie.css" rel="stylesheet"><![endif]>';
+QUnit.test('downlevel-revealed conditional comments', assert => {
+  const input = '<![if !IE]><link href="non-ie.css" rel="stylesheet"><![endif]>';
   assert.equal(minify(input), input);
   assert.equal(minify(input, { removeComments: true }), input);
 });
 
-QUnit.test('noscript', function(assert) {
-  var input;
+QUnit.test('noscript', assert => {
+  let input;
 
   input = '<SCRIPT SRC="x"></SCRIPT><NOSCRIPT>x</NOSCRIPT>';
   assert.equal(minify(input), '<script src="x"></script><noscript>x</noscript>');
@@ -2875,9 +2920,9 @@ QUnit.test('noscript', function(assert) {
     '<noscript><a href="#">External Link</a></noscript>');
 });
 
-QUnit.test('max line length', function(assert) {
-  var input;
-  var options = { maxLineLength: 25 };
+QUnit.test('max line length', assert => {
+  let input;
+  const options = { maxLineLength: 25 };
 
   input = '123456789012345678901234567890';
   assert.equal(minify(input, options), input);
@@ -2967,8 +3012,9 @@ QUnit.test('max line length', function(assert) {
   assert.equal(minify('<a href>ok</a>', options), '<a href>ok</a>');
 });
 
-QUnit.test('custom attribute collapse', function(assert) {
-  var input, output;
+QUnit.test('custom attribute collapse', assert => {
+  let input;
+  let output;
 
   input = '<div data-bind="\n' +
             'css: {\n' +
@@ -3004,23 +3050,24 @@ QUnit.test('custom attribute collapse', function(assert) {
   assert.equal(minify(input, { customAttrCollapse: /ng-class/ }), output);
 });
 
-QUnit.test('custom attribute collapse with empty attribute value', function(assert) {
-  var input = '<div ng-some\n\n></div>';
-  var output = '<div ng-some></div>';
+QUnit.test('custom attribute collapse with empty attribute value', assert => {
+  const input = '<div ng-some\n\n></div>';
+  const output = '<div ng-some></div>';
   assert.equal(minify(input, { customAttrCollapse: /.+/ }), output);
 });
 
-QUnit.test('custom attribute collapse with newlines, whitespace, and carriage returns', function(assert) {
-  var input = '<div ng-class="{ \n\r' +
+QUnit.test('custom attribute collapse with newlines, whitespace, and carriage returns', assert => {
+  const input = '<div ng-class="{ \n\r' +
           '               value:true, \n\r' +
           '               value2:false \n\r' +
           '               }"></div>';
-  var output = '<div ng-class="{value:true,value2:false}"></div>';
+  const output = '<div ng-class="{value:true,value2:false}"></div>';
   assert.equal(minify(input, { customAttrCollapse: /ng-class/ }), output);
 });
 
-QUnit.test('do not escape attribute value', function(assert) {
-  var input, output;
+QUnit.test('do not escape attribute value', assert => {
+  let input;
+  let output;
 
   input = '<div data=\'{\n' +
           '\t"element": "<div class=\\"test\\"></div>\n"' +
@@ -3034,19 +3081,20 @@ QUnit.test('do not escape attribute value', function(assert) {
   assert.equal(minify(input), output);
 });
 
-QUnit.test('quoteCharacter is single quote', function(assert) {
+QUnit.test('quoteCharacter is single quote', assert => {
   assert.equal(minify('<div class=\'bar\'>foo</div>', { quoteCharacter: '\'' }), '<div class=\'bar\'>foo</div>');
   assert.equal(minify('<div class="bar">foo</div>', { quoteCharacter: '\'' }), '<div class=\'bar\'>foo</div>');
 });
 
-QUnit.test('quoteCharacter is not single quote or double quote', function(assert) {
+QUnit.test('quoteCharacter is not single quote or double quote', assert => {
   assert.equal(minify('<div class=\'bar\'>foo</div>', { quoteCharacter: 'm' }), '<div class="bar">foo</div>');
   assert.equal(minify('<div class="bar">foo</div>', { quoteCharacter: 'm' }), '<div class="bar">foo</div>');
 });
 
-QUnit.test('remove space between attributes', function(assert) {
-  var input, output;
-  var options = {
+QUnit.test('remove space between attributes', assert => {
+  let input;
+  let output;
+  const options = {
     collapseBooleanAttributes: true,
     keepClosingSlash: true,
     removeAttributeQuotes: true,
@@ -3078,8 +3126,9 @@ QUnit.test('remove space between attributes', function(assert) {
   assert.equal(minify(input, options), output);
 });
 
-QUnit.test('markups from Angular 2', function(assert) {
-  var input, output;
+QUnit.test('markups from Angular 2', assert => {
+  let input;
+  let output;
   input = '<template ngFor #hero [ngForOf]="heroes">\n' +
           '  <hero-detail *ngIf="hero" [hero]="hero"></hero-detail>\n' +
           '</template>\n' +
@@ -3128,8 +3177,9 @@ QUnit.test('markups from Angular 2', function(assert) {
   }), output);
 });
 
-QUnit.test('auto-generated tags', function(assert) {
-  var input, output;
+QUnit.test('auto-generated tags', assert => {
+  let input;
+  let output;
 
   input = '</p>';
   assert.equal(minify(input, { includeAutoGeneratedTags: false }), input);
@@ -3179,8 +3229,9 @@ QUnit.test('auto-generated tags', function(assert) {
   assert.equal(minify(input, { includeAutoGeneratedTags: true }), output);
 });
 
-QUnit.test('sort attributes', function(assert) {
-  var input, output;
+QUnit.test('sort attributes', assert => {
+  let input;
+  let output;
 
   input = '<link href="foo">' +
           '<link rel="bar" href="baz">' +
@@ -3258,8 +3309,9 @@ QUnit.test('sort attributes', function(assert) {
   assert.equal(minify(input, { sortAttributes: true }), input);
 });
 
-QUnit.test('sort style classes', function(assert) {
-  var input, output;
+QUnit.test('sort style classes', assert => {
+  let input;
+  let output;
 
   input = '<a class="foo moo"></a>' +
           '<b class="bar foo"></b>' +
@@ -3350,8 +3402,9 @@ QUnit.test('sort style classes', function(assert) {
   assert.equal(minify(input, { sortClassName: true }), input);
 });
 
-QUnit.test('decode entity characters', function(assert) {
-  var input, output;
+QUnit.test('decode entity characters', assert => {
+  let input;
+  let output;
 
   input = '<!-- &ne; -->';
   assert.equal(minify(input), input);
@@ -3396,7 +3449,7 @@ QUnit.test('decode entity characters', function(assert) {
   assert.equal(minify(input, { collapseWhitespace: true, decodeEntities: true }), output);
 });
 
-QUnit.test('tests from PHPTAL', function(assert) {
+QUnit.test('tests from PHPTAL', assert => {
   [
     // trailing </p> removed by minifier, but not by PHPTAL
     ['<p>foo bar baz', '<p>foo     \t bar\n\n\n baz</p>'],
@@ -3474,7 +3527,7 @@ QUnit.test('tests from PHPTAL', function(assert) {
       '<br/>\n' +
       'foo</body> </html>  <!-- bla -->'
     ]*/
-  ].forEach(function(tokens) {
+  ].forEach(tokens => {
     assert.equal(minify(tokens[1], {
       collapseBooleanAttributes: true,
       collapseWhitespace: true,
@@ -3492,16 +3545,16 @@ QUnit.test('tests from PHPTAL', function(assert) {
   });
 });
 
-QUnit.test('canCollapseWhitespace and canTrimWhitespace hooks', function(assert) {
+QUnit.test('canCollapseWhitespace and canTrimWhitespace hooks', assert => {
   function canCollapseAndTrimWhitespace(tagName, attrs, defaultFn) {
-    if ((attrs || []).some(function(attr) { return attr.name === 'class' && attr.value === 'leaveAlone'; })) {
+    if ((attrs || []).some(({ name, value }) => name === 'class' && value === 'leaveAlone')) {
       return false;
     }
     return defaultFn(tagName, attrs);
   }
 
-  var input = '<div class="leaveAlone"><span> </span> foo  bar</div>';
-  var output = '<div class="leaveAlone"><span> </span> foo  bar</div>';
+  let input = '<div class="leaveAlone"><span> </span> foo  bar</div>';
+  let output = '<div class="leaveAlone"><span> </span> foo  bar</div>';
 
   assert.equal(minify(input, {
     collapseWhitespace: true,

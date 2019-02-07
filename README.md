@@ -1,8 +1,8 @@
 # HTMLMinifier
 
-[![NPM version](https://img.shields.io/npm/v/html-minifier.svg)](https://www.npmjs.com/package/html-minifier)
-[![Build Status](https://img.shields.io/travis/kangax/html-minifier.svg)](https://travis-ci.org/kangax/html-minifier)
-[![Dependency Status](https://img.shields.io/david/kangax/html-minifier.svg)](https://david-dm.org/kangax/html-minifier)
+[![NPM version](https://img.shields.io/npm/v/html-minifier.svg)](https://www.npmjs.com/package/@lodderhtml-minifier)
+[![Build Status](https://img.shields.io/travis/kangax/html-minifier.svg)](https://travis-ci.org/c-lodder/html-minifier)
+[![Dependency Status](https://img.shields.io/david/kangax/html-minifier.svg)](https://david-dm.org/c-lodder/html-minifier)
 
 [HTMLMinifier](https://kangax.github.io/html-minifier/) is a highly **configurable**, **well-tested**, JavaScript-based HTML minifier.
 
@@ -117,19 +117,19 @@ HTMLMinifier can't know that original markup was only half of the tree; it does 
 From NPM for use as a command line app:
 
 ```shell
-npm install html-minifier -g
+npm i @lodder/html-minifier -g
 ```
 
 From NPM for programmatic use:
 
 ```shell
-npm install html-minifier
+npm i @lodder/html-minifier
 ```
 
 From Git:
 
 ```shell
-git clone git://github.com/kangax/html-minifier.git
+git clone git://github.com/c-lodder/html-minifier.git
 cd html-minifier
 npm link .
 ```
@@ -143,8 +143,8 @@ Note that almost all options are disabled by default. For command line usage ple
 ### Node.js
 
 ```js
-var minify = require('html-minifier').minify;
-var result = minify('<p title="blah" id="moo">foo</p>', {
+const minify = require('html-minifier').minify;
+const result = minify('<p title="blah" id="moo">foo</p>', {
   removeAttributeQuotes: true
 });
 result; // '<p title=blah id=moo>foo</p>'
